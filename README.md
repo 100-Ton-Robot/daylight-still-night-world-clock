@@ -1,8 +1,8 @@
-# Day Night World Clock
+# Daylight Still Night Clock
 
 Yet another day/night world clock card for Home Assistant, this one uses css gradients and sun position so you can easily see sun up/down for each location.
 
-A lightweight [Home Assistant](https://www.home-assistant.io/) Lovelace card (`custom:world-clock-card`) that shows a row of timezone clocks, with an optional sky-gradient background that reflects the sun's actual position at each location.
+A lightweight [Home Assistant](https://www.home-assistant.io/) Lovelace card (`custom:daylight-still-night-clock-card`) that shows a row of timezone clocks, with an optional sky-gradient background that reflects the sun's actual position at each location.
 
 - Pure vanilla JS — no build step, no dependencies, no HA sensors required
 - Live-updating time, per-clock date labels that group automatically (e.g. one date bar spanning several columns when they share a calendar date)
@@ -11,41 +11,40 @@ A lightweight [Home Assistant](https://www.home-assistant.io/) Lovelace card (`c
 
 ## Installation
 
-### Option A — HACS (recommended)
+### Option A — Marketplace (recommended)
 
-1. In Home Assistant, open **HACS → Frontend**.
-2. Click the **⋮** menu → **Custom repositories**.
-3. Add `https://github.com/100-Ton-Robot/day-night-world-clock`, category **Dashboard**.
-4. Find **Day Night World Clock** in the list and click **Download**.
-5. Restart Home Assistant (or just reload resources) if prompted.
+1. In Home Assistant, go to **Settings → Marketplace**.
+2. Select **Add from link** (upper right).
+3. Enter `100-Ton-Robot/daylight-still-night-world-clock` and select **Add**. If asked for a type, choose **Dashboard**.
+4. Install **Daylight Still Night Clock**, then reload the browser.
 
-HACS registers the Lovelace resource for you — skip to [Configuration](#configuration).
+The Marketplace installs the card under `www/community` and registers the dashboard resource for you. If you manage resources in YAML, the install dialog shows the resource line to add. Skip to [Configuration](#configuration).
 
 ### Option B — Manual install
 
-1. Copy [`world-clock-card.js`](./world-clock-card.js) into your Home Assistant `config/www/` directory:
+1. Copy [`daylight-still-night-clock-card.js`](./daylight-still-night-clock-card.js) into your Home Assistant `config/www/` directory:
    ```
-   config/www/world-clock-card.js
+   config/www/daylight-still-night-clock-card.js
    ```
 2. Add it as a Lovelace resource:
    - **UI:** Settings → Dashboards → ⋮ (top right) → Resources → **Add Resource**
-     - URL: `/local/world-clock-card.js`
+     - URL: `/local/daylight-still-night-clock-card.js`
      - Resource type: **JavaScript module**
    - **YAML mode** (`lovelace_resources` or your dashboard's `resources:` key):
      ```yaml
-     - url: /local/world-clock-card.js
+     - url: /local/daylight-still-night-clock-card.js
        type: module
      ```
 3. Reload the dashboard (hard refresh the browser tab).
 
-> **Cache busting:** browsers aggressively cache `/local/` files. After editing the file, bump a version query string on the resource URL, e.g. `/local/world-clock-card.js?v=2`, and increment it on each future change.
+> **Cache busting:** browsers aggressively cache `/local/` files. After editing the file, bump a version query string on the resource URL, e.g. `/local/daylight-still-night-clock-card.js?v=2`, and increment it on each future change.
 
 ## Configuration
 
 Add the card to a dashboard, in YAML mode:
 
 ```yaml
-- type: custom:world-clock-card
+- type: custom:daylight-still-night-clock-card
   clocks:
     - tz: Australia/Sydney
       label: Sydney

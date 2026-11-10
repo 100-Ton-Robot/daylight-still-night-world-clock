@@ -46,7 +46,7 @@ function solarAltitudeDeg(date, lat, lon) {
 }
 
 
-class WorldClockCard extends HTMLElement {
+class DaylightStillNightClockCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -54,7 +54,7 @@ class WorldClockCard extends HTMLElement {
 
   setConfig(config) {
     if (!Array.isArray(config.clocks) || config.clocks.length === 0)
-      throw new Error("world-clock-card: 'clocks' must be a non-empty list");
+      throw new Error("daylight-still-night-clock-card: 'clocks' must be a non-empty list");
     this._config = config;
     this._formatters = config.clocks.map(({ tz }) => ({
       time: new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true }),
@@ -259,6 +259,23 @@ class WorldClockCard extends HTMLElement {
       return el;
     });
   }
+
+  static getStubConfig() {
+    return {
+      clocks: [
+        { tz: "Australia/Sydney", label: "Sydney", lat: -33.87, lon: 151.21 },
+        { tz: "Europe/London", label: "London", lat: 51.51, lon: -0.13 },
+        { tz: "America/New_York", label: "New York", lat: 40.71, lon: -74.01 },
+      ],
+    };
+  }
 }
 
-customElements.define("world-clock-card", WorldClockCard);
+customElements.define("daylight-still-night-clock-card", DaylightStillNightClockCard);
+
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "daylight-still-night-clock-card",
+  name: "Daylight Still Night Clock",
+  description: "Row of timezone clocks with a live sun-position sky gradient per location.",
+});
