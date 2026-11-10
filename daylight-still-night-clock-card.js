@@ -197,6 +197,7 @@ class DaylightStillNightClockCard extends HTMLElement {
 
     this._grid    = grid;
     this._dateEls = [];
+    this._lastGroupKey = null; // new grid has no date bars yet; force _tick to draw them
 
     this.shadowRoot.innerHTML = "";
     this.shadowRoot.appendChild(style);
@@ -260,6 +261,10 @@ class DaylightStillNightClockCard extends HTMLElement {
     });
   }
 
+  static getConfigElement() {
+    return document.createElement("daylight-still-night-clock-card-editor");
+  }
+
   static getStubConfig() {
     return {
       clocks: [
@@ -272,6 +277,159 @@ class DaylightStillNightClockCard extends HTMLElement {
 }
 
 customElements.define("daylight-still-night-clock-card", DaylightStillNightClockCard);
+
+// ---------------------------------------------------------------------------
+// Visual editor: one row per clock (label, timezone, lat, lon), add / remove /
+// reorder. Emits HA's standard "config-changed" event.
+// ---------------------------------------------------------------------------
+const _TIMEZONES = (() => {
+  try { return Intl.supportedValuesOf("timeZone"); } catch (e) { return []; }
+})();
+
+class DaylightStillNightClockCardEditor extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+  }
+
+  setConfig(config) {
+    // Our own edits come straight back through setConfig; re-rendering then
+    // would steal focus from the field being typed in.
+    if (this._lastEmitted && JSON.stringify(config) === this._lastEmitted) return;
+    this._config = { ...config, clocks: (config.clocks || []).map(c => ({ ...c })) };
+    this._render();
+  }
+
+  _emit() {
+    const config = { ...this._config, clocks: this._config.clocks.map(c => ({ ...c })) };
+    this._lastEmitted = JSON.stringify(config);
+    this.dispatchEvent(new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true }));
+  }
+
+  _setField(i, key, raw) {
+    const clock = this._config.clocks[i];
+    if (key === "lat" || key === "lon") {
+      const v = raw.trim() === "" ? NaN : Number(raw);
+      if (Number.isFinite(v)) clock[key] = v; else delete clock[key];
+    } else if (key === "tz") {
+      // Only commit real timezones; a half-typed one would make the preview error.
+      try { new Intl.DateTimeFormat("en-US", { timeZone: raw.trim() }); } catch (e) { return false; }
+      if (!raw.trim()) return false;
+      clock.tz = raw.trim();
+    } else {
+      clock[key] = raw;
+    }
+    this._emit();
+    return true;
+  }
+
+  _structural(fn) {
+    fn(this._config.clocks);
+    this._emit();
+    this._render();
+  }
+
+  _render() {
+    const clocks = this._config.clocks;
+    const root = this.shadowRoot;
+    root.innerHTML = `
+      <style>
+        :host { display: block; }
+        .clock {
+          border: 1px solid var(--divider-color, #ccc);
+          border-radius: 8px;
+          padding: 8px 10px;
+          margin-bottom: 8px;
+        }
+        .head { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+        .head .n { flex: 1; font-weight: 500; }
+        .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+        label { display: flex; flex-direction: column; font-size: 0.8em; color: var(--secondary-text-color); }
+        input {
+          font: inherit; font-size: 1.2em; padding: 6px 8px; margin-top: 2px;
+          border: 1px solid var(--divider-color, #ccc); border-radius: 4px;
+          background: var(--card-background-color, #fff); color: var(--primary-text-color);
+          box-sizing: border-box; width: 100%;
+        }
+        button {
+          font: inherit; cursor: pointer; border-radius: 4px; padding: 4px 8px;
+          border: 1px solid var(--divider-color, #ccc);
+          background: transparent; color: var(--primary-text-color);
+        }
+        input.bad { border-color: var(--error-color, #db4437); }
+        button:disabled { opacity: 0.35; cursor: default; }
+        .row-actions { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .hint { font-size: 0.8em; color: var(--secondary-text-color); margin: 4px 0 10px; }
+        .add { width: 100%; padding: 8px; }
+      </style>
+      <div class="hint">Clocks show left → right in this order. Keep them in east → west (or west → east) order so the date bars group correctly. Leave latitude/longitude empty for a plain dark background.</div>
+      <datalist id="tz">${_TIMEZONES.map(t => `<option value="${t}"></option>`).join("")}</datalist>
+      <div class="list"></div>
+      <button class="add" type="button">+ Add clock</button>
+    `;
+
+    const list = root.querySelector(".list");
+    clocks.forEach((clock, i) => {
+      const el = document.createElement("div");
+      el.className = "clock";
+      el.innerHTML = `
+        <div class="head">
+          <span class="n"></span>
+          <button type="button" data-act="up" title="Move left" ${i === 0 ? "disabled" : ""}>↑</button>
+          <button type="button" data-act="down" title="Move right" ${i === clocks.length - 1 ? "disabled" : ""}>↓</button>
+          <button type="button" data-act="remove" title="Remove" ${clocks.length === 1 ? "disabled" : ""}>✕</button>
+        </div>
+        <div class="fields">
+          <label>Label<input data-key="label" type="text"></label>
+          <label>Timezone<input data-key="tz" type="text" list="tz" spellcheck="false"></label>
+          <label>Latitude<input data-key="lat" type="number" step="any" min="-90" max="90"></label>
+          <label>Longitude<input data-key="lon" type="number" step="any" min="-180" max="180"></label>
+        </div>
+        <div class="row-actions">
+          <button type="button" data-act="home">Use home location</button>
+        </div>
+      `;
+      el.querySelector(".n").textContent = clock.label || `Clock ${i + 1}`;
+      el.querySelectorAll("input").forEach(inp => {
+        const key = inp.dataset.key;
+        inp.value = clock[key] ?? "";
+        inp.addEventListener("input", () => {
+          const ok = this._setField(i, key, inp.value);
+          inp.classList.toggle("bad", key === "tz" && !ok);
+          if (key === "label") el.querySelector(".n").textContent = inp.value || `Clock ${i + 1}`;
+        });
+      });
+      el.querySelector('[data-act="up"]').addEventListener("click", () =>
+        this._structural(c => { [c[i - 1], c[i]] = [c[i], c[i - 1]]; }));
+      el.querySelector('[data-act="down"]').addEventListener("click", () =>
+        this._structural(c => { [c[i], c[i + 1]] = [c[i + 1], c[i]]; }));
+      el.querySelector('[data-act="remove"]').addEventListener("click", () =>
+        this._structural(c => { c.splice(i, 1); }));
+      el.querySelector('[data-act="home"]').addEventListener("click", () => {
+        const cfg = this._hass && this._hass.config;
+        if (!cfg) return;
+        this._structural(c => {
+          c[i].lat = +Number(cfg.latitude).toFixed(4);
+          c[i].lon = +Number(cfg.longitude).toFixed(4);
+          if (!c[i].tz && cfg.time_zone) c[i].tz = cfg.time_zone;
+        });
+      });
+      list.appendChild(el);
+    });
+
+    root.querySelector(".add").addEventListener("click", () =>
+      this._structural(c => {
+        const tz = (this._hass && this._hass.config && this._hass.config.time_zone) || "UTC";
+        c.push({ tz, label: "New clock" });
+      }));
+  }
+}
+
+customElements.define("daylight-still-night-clock-card-editor", DaylightStillNightClockCardEditor);
 
 window.customCards = window.customCards || [];
 window.customCards.push({

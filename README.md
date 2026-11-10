@@ -41,7 +41,9 @@ The Marketplace installs the card under `www/community` and registers the dashbo
 
 ## Configuration
 
-Add the card to a dashboard, in YAML mode:
+Add **Daylight Still Night Clock** from the dashboard's card picker and use the visual editor: one row per clock with label, timezone (type to search), latitude and longitude, plus add / remove / reorder buttons and **Use home location**.
+
+Or in YAML:
 
 ```yaml
 - type: custom:daylight-still-night-clock-card
