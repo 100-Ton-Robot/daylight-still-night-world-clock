@@ -41,7 +41,7 @@ The Marketplace installs the card under `www/community` and registers the dashbo
 
 ## Configuration
 
-Add **Daylight Still Night Clock** from the dashboard's card picker and use the visual editor: one row per clock with label, timezone (type to search), latitude and longitude, plus add / remove / reorder buttons and **Use home location**.
+Add **Daylight Still Night Clock** from the dashboard's card picker and use the visual editor: one row per clock with label, timezone (type to search), latitude and longitude, a card-wide **Text size** section, plus add / remove / reorder buttons and **Use home location**.
 
 Or in YAML:
 
@@ -74,6 +74,9 @@ Or in YAML:
 | `clocks[].tz` | yes | Any [IANA timezone string](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) (e.g. `Europe/Paris`) |
 | `clocks[].label` | yes | Text shown above the time; truncates with an ellipsis if the column is too narrow |
 | `clocks[].lat` / `clocks[].lon` | no | Latitude/longitude in decimal degrees. When given, the column background shows a sun-position gradient (night → dawn/dusk → daylight) that updates live. Omit both to get a plain dark background with no sun tracking. |
+| `label_size` | no | Label text size as a multiple of the dashboard's normal text size. Default `1.0` |
+| `time_size` | no | Time text size, same units. Default `1.05` |
+| `date_size` | no | Date text size, same units. Default `0.7` |
 
 **Ordering matters:** clocks are rendered in the order listed, and the date-grouping bar assumes date order is contiguous (no interleaving of dates). List them east → west (or west → east) for date grouping to make sense.
 

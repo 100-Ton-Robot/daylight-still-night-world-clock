@@ -46,6 +46,9 @@ function solarAltitudeDeg(date, lat, lon) {
 }
 
 
+// Text sizes as multiples of the dashboard's normal text size (em).
+const TEXT_SIZE_DEFAULTS = { label_size: 1.0, time_size: 1.05, date_size: 0.7 };
+
 class DaylightStillNightClockCard extends HTMLElement {
   constructor() {
     super();
@@ -104,6 +107,10 @@ class DaylightStillNightClockCard extends HTMLElement {
   _build() {
     const n   = this._config.clocks.length;
     const now = new Date();
+    const size = (key) => {
+      const v = Number(this._config[key]);
+      return Number.isFinite(v) && v > 0 ? v : TEXT_SIZE_DEFAULTS[key];
+    };
 
     const style = document.createElement("style");
     style.textContent = `
@@ -127,7 +134,7 @@ class DaylightStillNightClockCard extends HTMLElement {
       .label {
         grid-row: 2;
         text-align: center;
-        font-size: 1.0em;
+        font-size: ${size("label_size")}em;
         opacity: 0.6;
         white-space: nowrap;
         overflow: hidden;
@@ -138,7 +145,7 @@ class DaylightStillNightClockCard extends HTMLElement {
       .time {
         grid-row: 3;
         text-align: center;
-        font-size: 1.05em;
+        font-size: ${size("time_size")}em;
         font-weight: 600;
         white-space: nowrap;
         position: relative;
@@ -147,7 +154,7 @@ class DaylightStillNightClockCard extends HTMLElement {
       .date {
         grid-row: 4;
         text-align: center;
-        font-size: 0.7em;
+        font-size: ${size("date_size")}em;
         opacity: 0.55;
         border-top: 1px solid currentColor;
         padding-top: 2px;
@@ -327,6 +334,12 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
     return true;
   }
 
+  _setSize(key, raw) {
+    const v = raw.trim() === "" ? NaN : Number(raw);
+    if (Number.isFinite(v) && v > 0) this._config[key] = v; else delete this._config[key];
+    this._emit();
+  }
+
   _structural(fn) {
     fn(this._config.clocks);
     this._emit();
@@ -348,6 +361,7 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
         .head { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
         .head .n { flex: 1; font-weight: 500; }
         .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+        .fields.three { grid-template-columns: 1fr 1fr 1fr; }
         label { display: flex; flex-direction: column; font-size: 0.8em; color: var(--secondary-text-color); }
         input {
           font: inherit; font-size: 1.2em; padding: 6px 8px; margin-top: 2px;
@@ -367,10 +381,26 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
         .add { width: 100%; padding: 8px; }
       </style>
       <div class="hint">Clocks show left → right in this order. Keep them in east → west (or west → east) order so the date bars group correctly. Leave latitude/longitude empty for a plain dark background.</div>
+      <div class="clock sizes">
+        <div class="head"><span class="n">Text size</span></div>
+        <div class="hint">Multiples of the dashboard's normal text size. Leave empty for the default.</div>
+        <div class="fields three">
+          <label>Label<input data-size="label_size" type="number" step="0.05" min="0.3"></label>
+          <label>Time<input data-size="time_size" type="number" step="0.05" min="0.3"></label>
+          <label>Date<input data-size="date_size" type="number" step="0.05" min="0.3"></label>
+        </div>
+      </div>
       <datalist id="tz">${_TIMEZONES.map(t => `<option value="${t}"></option>`).join("")}</datalist>
       <div class="list"></div>
       <button class="add" type="button">+ Add clock</button>
     `;
+
+    root.querySelectorAll("input[data-size]").forEach(inp => {
+      const key = inp.dataset.size;
+      inp.value = this._config[key] ?? "";
+      inp.placeholder = String(TEXT_SIZE_DEFAULTS[key]);
+      inp.addEventListener("input", () => this._setSize(key, inp.value));
+    });
 
     const list = root.querySelector(".list");
     clocks.forEach((clock, i) => {
