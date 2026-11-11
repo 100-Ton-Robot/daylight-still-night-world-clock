@@ -54,7 +54,13 @@ const LAYOUT_OPTIONS = {
   date_size:     { def: 0.7,  min: 0.3 },
   label_time_gap: { def: 0, min: -1, max: 3 },
   time_date_gap:  { def: 0, min: -1, max: 3 },
+  label_opacity: { def: 0.6,  min: 0, max: 1 },
+  time_opacity:  { def: 1,    min: 0, max: 1 },
+  date_opacity:  { def: 0.55, min: 0, max: 1 },
 };
+// Per-field text shadow switches (off by default).
+const SHADOW_KEYS = ["label_shadow", "time_shadow", "date_shadow"];
+const TEXT_SHADOW = "0 1px 2px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.6)";
 function _layoutValue(config, key) {
   const o = LAYOUT_OPTIONS[key];
   const v = config[key] === "" || config[key] == null ? NaN : Number(config[key]);
@@ -80,7 +86,9 @@ class DaylightStillNightClockCard extends HTMLElement {
   }
 
   getGridOptions() {
-    return { columns: 12, rows: 1, min_columns: 4, min_rows: 1 };
+    // No fixed rows: the card takes the height of its content, so the date
+    // row is never clipped whatever the text sizes and gaps are.
+    return { columns: 12, min_columns: 4 };
   }
 
   connectedCallback() {
@@ -125,6 +133,7 @@ class DaylightStillNightClockCard extends HTMLElement {
     // multiples of the card's normal text size.
     const gapTime = +(size("label_time_gap") / size("time_size")).toFixed(4);
     const gapDate = +(size("time_date_gap") / size("date_size")).toFixed(4);
+    const shadow = (key) => this._config[key] === true ? `text-shadow: ${TEXT_SHADOW};` : "";
 
     const style = document.createElement("style");
     style.textContent = `
@@ -149,7 +158,8 @@ class DaylightStillNightClockCard extends HTMLElement {
         grid-row: 2;
         text-align: center;
         font-size: ${size("label_size")}em;
-        opacity: 0.6;
+        opacity: ${size("label_opacity")};
+        ${shadow("label_shadow")}
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -162,6 +172,8 @@ class DaylightStillNightClockCard extends HTMLElement {
         font-size: ${size("time_size")}em;
         font-weight: 600;
         margin-top: ${gapTime}em;
+        opacity: ${size("time_opacity")};
+        ${shadow("time_shadow")}
         white-space: nowrap;
         position: relative;
         z-index: 1;
@@ -170,7 +182,8 @@ class DaylightStillNightClockCard extends HTMLElement {
         grid-row: 4;
         text-align: center;
         font-size: ${size("date_size")}em;
-        opacity: 0.55;
+        opacity: ${size("date_opacity")};
+        ${shadow("date_shadow")}
         border-top: 1px solid currentColor;
         padding-top: 2px;
         margin-top: calc(2px + ${gapDate}em);
@@ -386,6 +399,10 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
         .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
         .fields.three { grid-template-columns: 1fr 1fr 1fr; }
         .fields.gaps { margin-top: 6px; }
+        .col { display: flex; flex-direction: column; gap: 6px; }
+        .col-h { font-weight: 500; font-size: 0.9em; }
+        label.check { flex-direction: row; align-items: center; gap: 6px; font-size: 0.9em; }
+        label.check input { width: auto; margin: 0; }
         label { display: flex; flex-direction: column; font-size: 0.8em; color: var(--secondary-text-color); }
         input {
           font: inherit; font-size: 1.2em; padding: 6px 8px; margin-top: 2px;
@@ -406,12 +423,16 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       </style>
       <div class="hint">Clocks show left → right in this order. Keep them in east → west (or west → east) order so the date bars group correctly. Leave latitude/longitude empty for a plain dark background.</div>
       <div class="clock sizes">
-        <div class="head"><span class="n">Text size &amp; spacing</span></div>
-        <div class="hint">Multiples of the dashboard's normal text size. Gaps: 0 = original spacing, negative = closer together. Clear a field to go back to its default.</div>
+        <div class="head"><span class="n">Text style &amp; spacing</span></div>
+        <div class="hint">Sizes and gaps are multiples of the dashboard's normal text size. Gaps: 0 = original spacing, negative = closer together. Opacity: 0 = invisible, 1 = solid. Clear a field to go back to its default.</div>
         <div class="fields three">
-          <label>Label<input data-size="label_size" type="number" step="0.05" min="0.3"></label>
-          <label>Time<input data-size="time_size" type="number" step="0.05" min="0.3"></label>
-          <label>Date<input data-size="date_size" type="number" step="0.05" min="0.3"></label>
+          ${["label", "time", "date"].map(f => `
+            <div class="col">
+              <div class="col-h">${f[0].toUpperCase() + f.slice(1)}</div>
+              <label>Size<input data-size="${f}_size" type="number" step="0.05" min="0.3"></label>
+              <label>Opacity<input data-size="${f}_opacity" type="number" step="0.05" min="0" max="1"></label>
+              <label class="check"><input data-shadow="${f}_shadow" type="checkbox">Shadow</label>
+            </div>`).join("")}
         </div>
         <div class="fields gaps">
           <label>Gap: label → time<input data-size="label_time_gap" type="number" step="0.05" min="-1" max="3"></label>
@@ -430,6 +451,15 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       // Displaying it doesn't write it to the config; only an edit does.
       inp.value = this._config[key] ?? LAYOUT_OPTIONS[key].def;
       inp.addEventListener("input", () => this._setSize(key, inp.value));
+    });
+
+    root.querySelectorAll("input[data-shadow]").forEach(inp => {
+      const key = inp.dataset.shadow;
+      inp.checked = this._config[key] === true;
+      inp.addEventListener("change", () => {
+        if (inp.checked) this._config[key] = true; else delete this._config[key];
+        this._emit();
+      });
     });
 
     const list = root.querySelector(".list");

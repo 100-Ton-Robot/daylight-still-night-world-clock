@@ -41,7 +41,7 @@ The Marketplace installs the card under `www/community` and registers the dashbo
 
 ## Configuration
 
-Add **Daylight Still Night Clock** from the dashboard's card picker and use the visual editor: one row per clock with label, timezone (type to search), latitude and longitude, a card-wide **Text size & spacing** section, plus add / remove / reorder buttons and **Use home location**.
+Add **Daylight Still Night Clock** from the dashboard's card picker and use the visual editor: one row per clock with label, timezone (type to search), latitude and longitude, a card-wide **Text style & spacing** section (size, opacity and shadow per line, plus gaps), plus add / remove / reorder buttons and **Use home location**.
 
 Or in YAML:
 
@@ -79,12 +79,14 @@ Or in YAML:
 | `date_size` | no | Date text size, same units. Default `0.7` |
 | `label_time_gap` | no | Extra space between label and time, same units. `0` (default) = original spacing; negative pulls them closer (min `-1`, max `3`) |
 | `time_date_gap` | no | Extra space between time and date, same units and limits. Default `0` |
+| `label_opacity` / `time_opacity` / `date_opacity` | no | Text opacity, `0` (invisible) to `1` (solid). Defaults `0.6` / `1` / `0.55` |
+| `label_shadow` / `time_shadow` / `date_shadow` | no | `true` adds a dark text shadow, which helps on bright daylight backgrounds. Default off |
 
 **Ordering matters:** clocks are rendered in the order listed, and the date-grouping bar assumes date order is contiguous (no interleaving of dates). List them east → west (or west → east) for date grouping to make sense.
 
 ## Layout notes
 
-The card uses a 4-row CSS grid: a small top spacer, the label row, the time row, and a date row. Consecutive clocks that share the same calendar date get a single date bar spanning their columns (at most two groups, since ordering is monotonic). The grouping recomputes every second but only touches the DOM when the grouping actually changes, so it survives midnight rollovers without a page reload.
+The card uses a 4-row CSS grid: a small top spacer, the label row, the time row, and a date row. Consecutive clocks that share the same calendar date get a single date bar spanning their columns (at most two groups, since ordering is monotonic). The grouping recomputes every second but only touches the DOM when the grouping actually changes, so it survives midnight rollovers without a page reload. The card takes the height of its content (no fixed row count on sections dashboards), so text sizes and gaps never clip the date row.
 
 ## License
 
