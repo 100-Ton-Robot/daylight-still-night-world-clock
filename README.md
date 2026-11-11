@@ -118,6 +118,38 @@ The warm glow along the bottom in daytime uses `day_sun` and `day_horizon`. Valu
 
 In the visual editor, **Colours (all clocks)** and each clock's **Colours for this clock** have the on/off switch, a preset dropdown, a sky preview strip (night → noon) and a colour picker per key with a ↺ reset.
 
+## Time & date format
+
+Like the colours, format is set for the whole card and can be overridden per clock: default → card → clock.
+
+| Key | Values | Meaning |
+|-----|--------|---------|
+| `format` | `default` (if omitted) / `system` / `custom` | `default` = `1:30 PM` · `Wed, Nov 11` regardless of settings. `system` = Home Assistant's language and 12/24-hour setting (Profile → Time format). `custom` = the fields below |
+| `locale` | e.g. `de-DE`, `fr-FR` | Language/region for names and order. Empty = Home Assistant's language |
+| `hour_cycle` | `12` / `24` | Empty = Home Assistant's time format |
+| `show_seconds` | `true` / `false` | Default `false` |
+| `date_weekday` | `short` / `long` / `none` | Default `short` |
+| `date_month` | `short` / `long` / `numeric` | Default `short` |
+| `date_year` | `true` / `false` | Default `false` |
+
+```yaml
+format: custom
+locale: de-DE
+hour_cycle: 24
+date_weekday: long
+date_month: long
+clocks:
+  - tz: America/New_York
+    label: New York
+    format: default          # this clock keeps the US style
+```
+
+`format_enabled: false` (card) or `format_override: false` (clock) keeps the settings but ignores them. Date bars group clocks by calendar date in each timezone, so clocks with different formats still share a bar; the bar shows the date in its first clock's format.
+
+## Translations
+
+The editor follows your Home Assistant language. English (`en`, US spelling) and British English (`en-GB`) are included. To add a language, copy the `en` block in the `TRANSLATIONS` table at the top of `daylight-still-night-clock-card.js`, key it with the Home Assistant language code (e.g. `de`, `pt-BR`) and translate the values; missing keys fall back to the base language, then English. Pull requests welcome.
+
 ## Layout notes
 
 The card uses a 4-row CSS grid: a small top spacer, the label row, the time row, and a date row. Consecutive clocks that share the same calendar date get a single date bar spanning their columns (at most two groups, since ordering is monotonic). The grouping recomputes every second but only touches the DOM when the grouping actually changes, so it survives midnight rollovers without a page reload. The card takes the height of its content (no fixed row count on sections dashboards), so text sizes and gaps never clip the date row.

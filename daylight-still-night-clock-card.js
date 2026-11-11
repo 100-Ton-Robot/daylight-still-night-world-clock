@@ -1,3 +1,127 @@
+// ===========================================================================
+// TRANSLATIONS — editor text, one entry per language.
+//
+// To add a language, copy the "en" block, change the key to the Home
+// Assistant language code (e.g. "de", "fr", "pt-BR") and translate the
+// values. Keep the {placeholders}. Missing keys fall back to the base
+// language ("pt" for "pt-BR"), then to "en". Regional entries such as
+// "en-GB" only need the keys that differ.
+// ===========================================================================
+const TRANSLATIONS = {
+  en: {
+    order_hint: "Clocks show left → right in this order. Keep them in east → west (or west → east) order so the date bars group correctly. Leave latitude/longitude empty for a plain dark background.",
+    text_style: "Text style & spacing",
+    text_style_hint: "Sizes and gaps are multiples of the dashboard's normal text size. Gaps: 0 = original spacing, negative = closer together. Opacity: 0 = invisible, 1 = solid. Clear a field to go back to its default.",
+    part_label: "Label",
+    part_time: "Time",
+    part_date: "Date",
+    size: "Size",
+    opacity: "Opacity",
+    shadow: "Shadow",
+    gap_label_time: "Gap: label → time",
+    gap_time_date: "Gap: time → date",
+    move_left: "Move left",
+    move_right: "Move right",
+    remove: "Remove",
+    label: "Label",
+    timezone: "Timezone",
+    latitude: "Latitude",
+    longitude: "Longitude",
+    use_home: "Use home location",
+    add_clock: "+ Add clock",
+    clock_n: "Clock {n}",
+    new_clock: "New clock",
+
+    colors_card: "Colors (all clocks)",
+    colors_clock: "Colors for this clock",
+    colors_card_enable: "Use these card colors",
+    colors_clock_enable: "Color override for this clock",
+    preset: "Preset",
+    same_as_card: "Same as card",
+    reset_color: "Back to preset / card color",
+    group_night: "Night",
+    group_night_hint: "Sun more than 6° below the horizon",
+    group_twilight: "Twilight",
+    group_twilight_hint: "Sun 0–6° below the horizon",
+    group_day: "Day",
+    group_day_hint: "Sun up; the warm band rises toward its noon height",
+    group_text: "Text",
+    group_text_hint: "Date line follows the date color; a shared date bar uses its first clock's color",
+    ckey_top: "Top",
+    ckey_upper: "Upper",
+    ckey_lower: "Lower",
+    ckey_bottom: "Bottom",
+    ckey_sky: "Sky",
+    ckey_horizon: "Horizon",
+    ckey_sun: "Sun",
+    ckey_label: "Label",
+    ckey_time: "Time",
+    ckey_date: "Date",
+    preset_default: "Default",
+    preset_pastel: "Pastel",
+    preset_vivid: "Vivid",
+    preset_high_contrast: "High contrast",
+    preset_monochrome: "Monochrome",
+    sample_night: "Night",
+    sample_twilight: "Twilight",
+    sample_sunrise: "Sunrise",
+    sample_low_sun: "Low sun",
+    sample_afternoon: "Afternoon",
+    sample_noon: "Noon",
+
+    format_card: "Time & date format (all clocks)",
+    format_clock: "Time & date format for this clock",
+    format_card_enable: "Use these card settings",
+    format_clock_enable: "Format override for this clock",
+    format: "Format",
+    format_default: "Default (1:30 PM · Wed, Nov 11)",
+    format_system: "System (Home Assistant language and time format)",
+    format_custom: "Custom",
+    custom_hint: "Fields left on Automatic follow Home Assistant's language and time format.",
+    custom_hint_clock: "Fields left on Same as card use the card's setting.",
+    automatic: "Automatic",
+    locale: "Language / region",
+    locale_placeholder: "e.g. de-DE",
+    hour_cycle: "Clock",
+    hc_12: "12-hour",
+    hc_24: "24-hour",
+    seconds: "Seconds",
+    weekday: "Weekday",
+    month: "Month",
+    year: "Year",
+    opt_show: "Show",
+    opt_hide: "Hide",
+    opt_short: "Short",
+    opt_long: "Long",
+    opt_none: "None",
+    opt_numeric: "Number",
+  },
+  "en-GB": {
+    colors_card: "Colours (all clocks)",
+    colors_clock: "Colours for this clock",
+    colors_card_enable: "Use these card colours",
+    colors_clock_enable: "Colour override for this clock",
+    reset_color: "Back to preset / card colour",
+    group_text_hint: "Date line follows the date colour; a shared date bar uses its first clock's colour",
+  },
+};
+
+function _hassLanguage(hass) {
+  return (hass && ((hass.locale && hass.locale.language) || hass.language)) ||
+    (typeof navigator !== "undefined" && navigator.language) || "en";
+}
+
+function _t(lang, key, vars) {
+  const find = l => {
+    if (!l) return undefined;
+    const hit = Object.keys(TRANSLATIONS).find(k => k.toLowerCase() === l.toLowerCase());
+    return hit && TRANSLATIONS[hit][key];
+  };
+  let s = find(lang) ?? find(String(lang || "").split("-")[0]) ?? TRANSLATIONS.en[key] ?? key;
+  if (vars) Object.entries(vars).forEach(([k, v]) => { s = s.split(`{${k}}`).join(String(v)); });
+  return s;
+}
+
 function _solarParams(date) {
   const R = Math.PI / 180;
   const JD = date.getTime() / 86400000 + 2440587.5;
@@ -76,13 +200,13 @@ function _layoutValue(config, key) {
 // (clock) keep the settings in the config but ignore them.
 // ---------------------------------------------------------------------------
 const COLOR_GROUPS = [
-  { name: "Night",    hint: "Sun more than 6° below the horizon",
+  { id: "night",
     keys: ["night_top", "night_upper", "night_lower", "night_bottom"] },
-  { name: "Twilight", hint: "Sun 0–6° below the horizon",
+  { id: "twilight",
     keys: ["twilight_top", "twilight_upper", "twilight_lower", "twilight_bottom"] },
-  { name: "Day",      hint: "Sun up; the warm band rises toward its noon height",
+  { id: "day",
     keys: ["day_top", "day_upper", "day_sky", "day_horizon", "day_sun"] },
-  { name: "Text",     hint: "Date line follows the date colour; a shared date bar uses its first clock's colour",
+  { id: "text",
     keys: ["text_label", "text_time", "text_date"] },
 ];
 const COLOR_KEYS = COLOR_GROUPS.flatMap(g => g.keys);
@@ -167,6 +291,88 @@ function sunGradient(alt, peakAlt, c) {
   return `${dim}, ${arch}, ${base}`;
 }
 
+// ---------------------------------------------------------------------------
+// Time & date format. Layering per clock, like the colours:
+// default → card settings → clock settings. `format_enabled: false` (card) /
+// `format_override: false` (clock) keep the settings but ignore them.
+//   format: default | system | custom
+//   custom fields: locale, hour_cycle (12|24), show_seconds, date_weekday
+//   (short|long|none), date_month (short|long|numeric), date_year
+// ---------------------------------------------------------------------------
+const FORMAT_KEYS = ["format", "locale", "hour_cycle", "show_seconds", "date_weekday", "date_month", "date_year"];
+
+function _applyFormatLevel(base, lvl) {
+  const out = { ...base };
+  FORMAT_KEYS.forEach(k => { if (lvl[k] !== undefined && lvl[k] !== null && lvl[k] !== "") out[k] = lvl[k]; });
+  return out;
+}
+function _cardFormat(config) {
+  return config.format_enabled === false ? { format: "default" } : _applyFormatLevel({ format: "default" }, config);
+}
+function _clockFormat(config, clock) {
+  const card = _cardFormat(config);
+  return clock.format_override === false ? card : _applyFormatLevel(card, clock);
+}
+
+function _validLocale(v) {
+  try { return Intl.DateTimeFormat.supportedLocalesOf([String(v)]).length > 0; } catch (e) { return false; }
+}
+
+// HA's language and 12/24-hour setting (Profile → Time format).
+function _systemLocale(hass) {
+  const lang = _hassLanguage(hass);
+  const tf = hass && hass.locale && hass.locale.time_format;
+  let hour12;
+  if (tf === "12") hour12 = true;
+  else if (tf === "24") hour12 = false;
+  else if (tf === "system") {
+    try { hour12 = new Intl.DateTimeFormat(undefined, { hour: "numeric" }).resolvedOptions().hour12; } catch (e) { /* locale default */ }
+  }
+  return { lang, hour12 };
+}
+
+// Resolved format → Intl locale + options for the time and date lines.
+function _formatOptions(f, hass) {
+  if (f.format !== "system" && f.format !== "custom")
+    return {
+      locale: "en-US",
+      time: { hour: "numeric", minute: "2-digit", hour12: true },
+      date: { weekday: "short", month: "short", day: "numeric" },
+    };
+  const sys = _systemLocale(hass);
+  const time = { hour: "numeric", minute: "2-digit" };
+  const date = { weekday: "short", month: "short", day: "numeric" };
+  let locale = sys.lang;
+  let hour12 = sys.hour12;
+  if (f.format === "custom") {
+    if (f.locale && _validLocale(f.locale)) locale = f.locale;
+    if (String(f.hour_cycle) === "12") hour12 = true;
+    else if (String(f.hour_cycle) === "24") hour12 = false;
+    if (f.show_seconds === true) time.second = "2-digit";
+    if (f.date_weekday === "long") date.weekday = "long";
+    else if (f.date_weekday === "none") delete date.weekday;
+    if (f.date_month === "long" || f.date_month === "numeric") date.month = f.date_month;
+    if (f.date_year === true) date.year = "numeric";
+  }
+  if (hour12 !== undefined) time.hour12 = hour12;
+  return { locale, time, date };
+}
+
+function _makeFormatters(f, tz, hass) {
+  const o = _formatOptions(f, hass);
+  const make = (opts) => {
+    try { return new Intl.DateTimeFormat(o.locale, { timeZone: tz, ...opts }); }
+    catch (e) { return new Intl.DateTimeFormat("en-US", { timeZone: tz, ...opts }); }
+  };
+  return {
+    time: make(o.time),
+    date: make(o.date),
+    // Calendar date in the clock's timezone, independent of display format;
+    // date bars group on this so clocks with different formats still merge.
+    day: new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }),
+  };
+}
+
 class DaylightStillNightClockCard extends HTMLElement {
   constructor() {
     super();
@@ -177,12 +383,26 @@ class DaylightStillNightClockCard extends HTMLElement {
     if (!Array.isArray(config.clocks) || config.clocks.length === 0)
       throw new Error("daylight-still-night-clock-card: 'clocks' must be a non-empty list");
     this._config = config;
-    this._formatters = config.clocks.map(({ tz }) => ({
-      time: new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true }),
-      date: new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short", month: "short", day: "numeric" }),
-    }));
+    this._makeAllFormatters();
     this._colors = config.clocks.map(clock => _clockColors(config, clock));
     if (this._built) this._rebuild();
+  }
+
+  _makeAllFormatters() {
+    this._formatters = this._config.clocks.map(clock =>
+      _makeFormatters(_clockFormat(this._config, clock), clock.tz, this._hass));
+  }
+
+  // Only the language and 12/24-hour setting matter here ("system" format);
+  // rebuild formatters when either changes, not on every state update.
+  set hass(hass) {
+    const sig = `${_hassLanguage(hass)}|${hass && hass.locale && hass.locale.time_format}`;
+    this._hass = hass;
+    if (sig === this._hassSig) return;
+    this._hassSig = sig;
+    if (!this._config) return;
+    this._makeAllFormatters();
+    if (this._built) { this._lastGroupKey = null; this._tick(); }
   }
 
   getGridOptions() {
@@ -339,20 +559,23 @@ class DaylightStillNightClockCard extends HTMLElement {
     const clocks = this._config.clocks.map((_, i) => ({
       time: this._formatters[i].time.format(now),
       date: this._formatters[i].date.format(now),
+      day:  this._formatters[i].day.format(now),
     }));
 
     clocks.forEach(({ time }, i) => {
       this._timeEls[i].textContent = time;
     });
 
-    // Group consecutive clocks by date string
+    // Group consecutive clocks by calendar date (not display text, so clocks
+    // with different formats still share a bar); the bar shows the text of
+    // its first clock.
     const groups = [];
-    clocks.forEach(({ date }, i) => {
+    clocks.forEach(({ date, day }, i) => {
       const last = groups.at(-1);
-      if (last && last.date === date) {
+      if (last && last.day === day) {
         last.end = i + 1;
       } else {
-        groups.push({ date, start: i + 1, end: i + 1 });
+        groups.push({ date, day, start: i + 1, end: i + 1 });
       }
     });
 
@@ -392,12 +615,15 @@ class DaylightStillNightClockCard extends HTMLElement {
 customElements.define("daylight-still-night-clock-card", DaylightStillNightClockCard);
 
 // ---------------------------------------------------------------------------
-// Visual editor: one row per clock (label, timezone, lat, lon), add / remove /
-// reorder. Emits HA's standard "config-changed" event.
+// Visual editor: text style, card colours + format, then one block per clock
+// (label, timezone, lat, lon, its own colours + format), add / remove /
+// reorder. Emits HA's standard "config-changed" event. All text via _t().
 // ---------------------------------------------------------------------------
 const _TIMEZONES = (() => {
   try { return Intl.supportedValuesOf("timeZone"); } catch (e) { return []; }
 })();
+const _LOCALE_SUGGESTIONS = ["en-US", "en-GB", "en-AU", "en-CA", "de-DE", "fr-FR", "es-ES", "it-IT", "nl-NL",
+  "pt-BR", "pt-PT", "sv-SE", "da-DK", "nb-NO", "fi-FI", "pl-PL", "cs-CZ", "ja-JP", "zh-CN", "ko-KR", "ar-EG", "hi-IN"];
 
 class DaylightStillNightClockCardEditor extends HTMLElement {
   constructor() {
@@ -407,6 +633,15 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    const lang = _hassLanguage(hass);
+    if (lang !== this._lang) {
+      this._lang = lang;
+      if (this._config) this._render();
+    }
+  }
+
+  _t(key, vars) {
+    return _t(this._lang || _hassLanguage(this._hass), key, vars);
   }
 
   setConfig(config) {
@@ -445,6 +680,7 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       clock[key] = raw;
     }
     this._emit();
+    this._refreshFormats();
     return true;
   }
 
@@ -462,14 +698,29 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
     this._render();
   }
 
-  // --- Colours -------------------------------------------------------------
   // scope: "card" or a clock index.
-
   _level(scope) {
     return scope === "card" ? this._config : this._config.clocks[scope];
   }
 
-  _enabledKey(scope) {
+  _scopeOf(sec, attr) {
+    return sec.dataset[attr] === "card" ? "card" : Number(sec.dataset[attr]);
+  }
+
+  // Shared on/off switch wiring for colour and format sections.
+  _wireSwitch(sec, selector, scope, key, refresh) {
+    const en = sec.querySelector(selector);
+    en.checked = this._level(scope)[key] !== false;
+    en.addEventListener("change", () => {
+      if (en.checked) delete this._level(scope)[key]; else this._level(scope)[key] = false;
+      this._emit();
+      refresh();
+    });
+  }
+
+  // --- Colours -------------------------------------------------------------
+
+  _colorEnabledKey(scope) {
     return scope === "card" ? "colors_enabled" : "color_override";
   }
 
@@ -500,27 +751,28 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
   }
 
   _colorSectionHTML(scope) {
+    const t = (k, v) => this._t(k, v);
     const id = scope === "card" ? "card" : `clock-${scope}`;
     const isCard = scope === "card";
-    const presetOpts = (isCard ? "" : `<option value="">Same as card</option>`) +
-      Object.entries(PRESETS).map(([k, p]) => `<option value="${k}">${p.label}</option>`).join("");
-    const pretty = k => { const s = k.split("_").slice(1).join(" "); return s[0].toUpperCase() + s.slice(1); };
+    const presetOpts = (isCard ? "" : `<option value="">${t("same_as_card")}</option>`) +
+      Object.keys(PRESETS).map(k => `<option value="${k}">${t(`preset_${k}`)}</option>`).join("");
+    const keyName = k => t(`ckey_${k.split("_").slice(1).join("_")}`);
     return `
-      <details class="colors" data-cscope="${scope}" data-open="${id}-colors">
-        <summary>${isCard ? "Colours (all clocks)" : "Colours for this clock"}</summary>
-        <label class="check"><input type="checkbox" data-cenabled>${isCard ? "Use these card colours" : "Colour override for this clock"}</label>
+      <details class="sect" data-cscope="${scope}" data-open="${id}-colors">
+        <summary>${t(isCard ? "colors_card" : "colors_clock")}</summary>
+        <label class="check"><input type="checkbox" data-cenabled>${t(isCard ? "colors_card_enable" : "colors_clock_enable")}</label>
         <div class="cbody">
-          <label>Preset<select data-preset>${presetOpts}</select></label>
+          <label>${t("preset")}<select data-preset>${presetOpts}</select></label>
           <div class="preview"></div>
           ${COLOR_GROUPS.map(g => `
-            <details class="cgroup" data-open="${id}-${g.name}">
-              <summary>${g.name} <span class="ghint">${g.hint}</span></summary>
+            <details class="cgroup" data-open="${id}-${g.id}">
+              <summary>${t(`group_${g.id}`)} <span class="ghint">${t(`group_${g.id}_hint`)}</span></summary>
               ${g.keys.map(k => `
                 <div class="crow">
-                  <span class="cname">${pretty(k)}</span>
+                  <span class="cname">${keyName(k)}</span>
                   <input type="color" data-ckey="${k}">
                   <input type="text" data-ctext="${k}" spellcheck="false">
-                  <button type="button" data-creset="${k}" title="Back to preset / card colour">↺</button>
+                  <button type="button" data-creset="${k}" title="${t("reset_color")}">↺</button>
                 </div>`).join("")}
             </details>`).join("")}
         </div>
@@ -528,17 +780,9 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
   }
 
   _wireColorSection(sec) {
-    const scope = sec.dataset.cscope === "card" ? "card" : Number(sec.dataset.cscope);
+    const scope = this._scopeOf(sec, "cscope");
     const lvl = () => this._level(scope);
-    const enKey = this._enabledKey(scope);
-
-    const en = sec.querySelector("[data-cenabled]");
-    en.checked = lvl()[enKey] !== false;
-    en.addEventListener("change", () => {
-      if (en.checked) delete lvl()[enKey]; else lvl()[enKey] = false;
-      this._emit();
-      this._refreshColors();
-    });
+    this._wireSwitch(sec, "[data-cenabled]", scope, this._colorEnabledKey(scope), () => this._refreshColors());
 
     const sel = sec.querySelector("[data-preset]");
     sel.value = lvl().preset && PRESETS[lvl().preset] ? lvl().preset : (scope === "card" ? "default" : "");
@@ -565,8 +809,8 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       }));
     sec.querySelectorAll("[data-creset]").forEach(btn =>
       btn.addEventListener("click", () => {
-        const t = sec.querySelector(`[data-ctext="${btn.dataset.creset}"]`);
-        t.value = ""; t.classList.remove("bad");
+        const tx = sec.querySelector(`[data-ctext="${btn.dataset.creset}"]`);
+        tx.value = ""; tx.classList.remove("bad");
         this._setColor(scope, btn.dataset.creset, null);
       }));
   }
@@ -580,14 +824,14 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       if (/^#[0-9a-f]{3}$/i.test(v)) return "#" + v.slice(1).split("").map(ch => ch + ch).join("").toLowerCase();
       return "#000000";
     };
-    const samples = [["Night", -20], ["Twilight", -3], ["Sunrise", 1], ["Low sun", 10], ["Afternoon", 30], ["Noon", 60]];
+    const samples = [["night", -20], ["twilight", -3], ["sunrise", 1], ["low_sun", 10], ["afternoon", 30], ["noon", 60]];
     root.querySelectorAll("[data-cscope]").forEach(sec => {
-      const scope = sec.dataset.cscope === "card" ? "card" : Number(sec.dataset.cscope);
+      const scope = this._scopeOf(sec, "cscope");
       const lvl = this._level(scope);
       if (!lvl) return;
       const shown = this._levelColors(scope);
       const own = lvl.colors || {};
-      sec.classList.toggle("off", lvl[this._enabledKey(scope)] === false);
+      sec.classList.toggle("off", lvl[this._colorEnabledKey(scope)] === false);
       sec.querySelectorAll("[data-ckey]").forEach(inp => {
         if (root.activeElement !== inp) inp.value = toHex(shown[inp.dataset.ckey]);
       });
@@ -599,11 +843,106 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       sec.querySelectorAll("[data-creset]").forEach(btn => { btn.disabled = own[btn.dataset.creset] == null; });
       const eff = this._effectiveColors(scope);
       sec.querySelector(".preview").innerHTML = samples.map(([name, alt]) =>
-        `<div class="pcol" style="background:${sunGradient(alt, 60, eff)}"><span style="color:${eff.text_time}">${name}</span></div>`).join("");
+        `<div class="pcol" style="background:${sunGradient(alt, 60, eff)}"><span style="color:${eff.text_time}">${this._t(`sample_${name}`)}</span></div>`).join("");
+    });
+  }
+
+  // --- Time & date format --------------------------------------------------
+
+  _formatEnabledKey(scope) {
+    return scope === "card" ? "format_enabled" : "format_override";
+  }
+
+  _formatSectionHTML(scope) {
+    const t = k => this._t(k);
+    const id = scope === "card" ? "card" : `clock-${scope}`;
+    const isCard = scope === "card";
+    const unset = `<option value="">${t(isCard ? "automatic" : "same_as_card")}</option>`;
+    const opts = pairs => unset + pairs.map(([v, k]) => `<option value="${v}">${t(k)}</option>`).join("");
+    return `
+      <details class="sect" data-fscope="${scope}" data-open="${id}-format">
+        <summary>${t(isCard ? "format_card" : "format_clock")}</summary>
+        <label class="check"><input type="checkbox" data-fenabled>${t(isCard ? "format_card_enable" : "format_clock_enable")}</label>
+        <div class="cbody">
+          <label>${t("format")}<select data-fkey="format">
+            ${isCard ? "" : `<option value="">${t("same_as_card")}</option>`}
+            <option value="default">${t("format_default")}</option>
+            <option value="system">${t("format_system")}</option>
+            <option value="custom">${t("format_custom")}</option>
+          </select></label>
+          <div class="fcustom">
+            <div class="hint">${t(isCard ? "custom_hint" : "custom_hint_clock")}</div>
+            <div class="fields">
+              <label>${t("locale")}<input type="text" data-fkey="locale" list="locales" spellcheck="false" placeholder="${t("locale_placeholder")}"></label>
+              <label>${t("hour_cycle")}<select data-fkey="hour_cycle">${opts([["12", "hc_12"], ["24", "hc_24"]])}</select></label>
+              <label>${t("seconds")}<select data-fkey="show_seconds">${opts([["true", "opt_show"], ["false", "opt_hide"]])}</select></label>
+              <label>${t("weekday")}<select data-fkey="date_weekday">${opts([["short", "opt_short"], ["long", "opt_long"], ["none", "opt_none"]])}</select></label>
+              <label>${t("month")}<select data-fkey="date_month">${opts([["short", "opt_short"], ["long", "opt_long"], ["numeric", "opt_numeric"]])}</select></label>
+              <label>${t("year")}<select data-fkey="date_year">${opts([["true", "opt_show"], ["false", "opt_hide"]])}</select></label>
+            </div>
+          </div>
+          <div class="fsample"></div>
+        </div>
+      </details>`;
+  }
+
+  _wireFormatSection(sec) {
+    const scope = this._scopeOf(sec, "fscope");
+    const lvl = () => this._level(scope);
+    this._wireSwitch(sec, "[data-fenabled]", scope, this._formatEnabledKey(scope), () => this._refreshFormats());
+
+    // Stored types: hour_cycle number, show_seconds / date_year boolean.
+    const fromUi = (key, v) => {
+      if (key === "hour_cycle") return Number(v);
+      if (key === "show_seconds" || key === "date_year") return v === "true";
+      return v;
+    };
+    sec.querySelectorAll("select[data-fkey]").forEach(sel => {
+      const key = sel.dataset.fkey;
+      const cur = lvl()[key];
+      sel.value = cur === undefined || cur === null ? (scope === "card" && key === "format" ? "default" : "") : String(cur);
+      sel.addEventListener("change", () => {
+        if (!sel.value || (scope === "card" && key === "format" && sel.value === "default")) delete lvl()[key];
+        else lvl()[key] = fromUi(key, sel.value);
+        this._emit();
+        this._refreshFormats();
+      });
+    });
+    const loc = sec.querySelector('input[data-fkey="locale"]');
+    loc.value = lvl().locale ?? "";
+    loc.addEventListener("input", () => {
+      const v = loc.value.trim();
+      if (!v) { loc.classList.remove("bad"); delete lvl().locale; }
+      else if (_validLocale(v)) { loc.classList.remove("bad"); lvl().locale = v; }
+      else { loc.classList.add("bad"); return; }
+      this._emit();
+      this._refreshFormats();
+    });
+  }
+
+  _refreshFormats() {
+    const root = this.shadowRoot;
+    const now = new Date();
+    const homeTz = this._hass && this._hass.config && this._hass.config.time_zone;
+    root.querySelectorAll("[data-fscope]").forEach(sec => {
+      const scope = this._scopeOf(sec, "fscope");
+      const lvl = this._level(scope);
+      if (!lvl) return;
+      const isCard = scope === "card";
+      sec.classList.toggle("off", lvl[this._formatEnabledKey(scope)] === false);
+      // Show the custom fields when this level, if switched on, ends up custom.
+      const below = isCard ? { format: "default" } : _cardFormat(this._config);
+      sec.querySelector(".fcustom").hidden = _applyFormatLevel(below, lvl).format !== "custom";
+      const eff = isCard ? _cardFormat(this._config) : _clockFormat(this._config, lvl);
+      let tz = isCard ? homeTz : lvl.tz;
+      try { new Intl.DateTimeFormat("en-US", { timeZone: tz }); } catch (e) { tz = undefined; }
+      const f = _makeFormatters(eff, tz, this._hass);
+      sec.querySelector(".fsample").textContent = `${f.time.format(now)} · ${f.date.format(now)}`;
     });
   }
 
   _render() {
+    const t = (k, v) => this._t(k, v);
     const clocks = this._config.clocks;
     const root = this.shadowRoot;
     root.innerHTML = `
@@ -641,14 +980,15 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
         .row-actions { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
         .hint { font-size: 0.8em; color: var(--secondary-text-color); margin: 4px 0 10px; }
         .add { width: 100%; padding: 8px; }
-        details.colors { border: 1px solid var(--divider-color, #ccc); border-radius: 8px; padding: 6px 10px; margin: 8px 0; }
-        details.colors > summary { font-weight: 500; cursor: pointer; }
-        details.colors.off .cbody { opacity: 0.45; }
+        details.sect { border: 1px solid var(--divider-color, #ccc); border-radius: 8px; padding: 6px 10px; margin: 8px 0; }
+        details.sect > summary { font-weight: 500; cursor: pointer; }
+        details.sect.off .cbody { opacity: 0.45; }
         .cbody { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
         select {
           font: inherit; padding: 6px 8px; margin-top: 2px; border-radius: 4px;
           border: 1px solid var(--divider-color, #ccc);
           background: var(--card-background-color, #fff); color: var(--primary-text-color);
+          width: 100%; box-sizing: border-box;
         }
         .preview { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; }
         .pcol { height: 54px; border-radius: 4px; display: flex; align-items: flex-start; justify-content: center; }
@@ -659,29 +999,32 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
         .cname { font-size: 0.85em; }
         .crow input[type="color"] { padding: 0; height: 2em; margin: 0; cursor: pointer; }
         .crow input[type="text"] { font-size: 1em; padding: 4px 6px; margin: 0; }
+        .fsample { font-size: 1.05em; font-weight: 500; padding: 4px 0; }
       </style>
-      <div class="hint">Clocks show left → right in this order. Keep them in east → west (or west → east) order so the date bars group correctly. Leave latitude/longitude empty for a plain dark background.</div>
+      <div class="hint">${t("order_hint")}</div>
       <div class="clock sizes">
-        <div class="head"><span class="n">Text style &amp; spacing</span></div>
-        <div class="hint">Sizes and gaps are multiples of the dashboard's normal text size. Gaps: 0 = original spacing, negative = closer together. Opacity: 0 = invisible, 1 = solid. Clear a field to go back to its default.</div>
+        <div class="head"><span class="n">${t("text_style")}</span></div>
+        <div class="hint">${t("text_style_hint")}</div>
         <div class="fields three">
           ${["label", "time", "date"].map(f => `
             <div class="col">
-              <div class="col-h">${f[0].toUpperCase() + f.slice(1)}</div>
-              <label>Size<input data-size="${f}_size" type="number" step="0.05" min="0.3"></label>
-              <label>Opacity<input data-size="${f}_opacity" type="number" step="0.05" min="0" max="1"></label>
-              <label class="check"><input data-shadow="${f}_shadow" type="checkbox">Shadow</label>
+              <div class="col-h">${t(`part_${f}`)}</div>
+              <label>${t("size")}<input data-size="${f}_size" type="number" step="0.05" min="0.3"></label>
+              <label>${t("opacity")}<input data-size="${f}_opacity" type="number" step="0.05" min="0" max="1"></label>
+              <label class="check"><input data-shadow="${f}_shadow" type="checkbox">${t("shadow")}</label>
             </div>`).join("")}
         </div>
         <div class="fields gaps">
-          <label>Gap: label → time<input data-size="label_time_gap" type="number" step="0.05" min="-1" max="3"></label>
-          <label>Gap: time → date<input data-size="time_date_gap" type="number" step="0.05" min="-1" max="3"></label>
+          <label>${t("gap_label_time")}<input data-size="label_time_gap" type="number" step="0.05" min="-1" max="3"></label>
+          <label>${t("gap_time_date")}<input data-size="time_date_gap" type="number" step="0.05" min="-1" max="3"></label>
         </div>
       </div>
       ${this._colorSectionHTML("card")}
-      <datalist id="tz">${_TIMEZONES.map(t => `<option value="${t}"></option>`).join("")}</datalist>
+      ${this._formatSectionHTML("card")}
+      <datalist id="tz">${_TIMEZONES.map(z => `<option value="${z}"></option>`).join("")}</datalist>
+      <datalist id="locales">${_LOCALE_SUGGESTIONS.map(l => `<option value="${l}"></option>`).join("")}</datalist>
       <div class="list"></div>
-      <button class="add" type="button">+ Add clock</button>
+      <button class="add" type="button">${t("add_clock")}</button>
     `;
 
     root.querySelectorAll("input[data-size]").forEach(inp => {
@@ -709,29 +1052,31 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       el.innerHTML = `
         <div class="head">
           <span class="n"></span>
-          <button type="button" data-act="up" title="Move left" ${i === 0 ? "disabled" : ""}>↑</button>
-          <button type="button" data-act="down" title="Move right" ${i === clocks.length - 1 ? "disabled" : ""}>↓</button>
-          <button type="button" data-act="remove" title="Remove" ${clocks.length === 1 ? "disabled" : ""}>✕</button>
+          <button type="button" data-act="up" title="${t("move_left")}" ${i === 0 ? "disabled" : ""}>↑</button>
+          <button type="button" data-act="down" title="${t("move_right")}" ${i === clocks.length - 1 ? "disabled" : ""}>↓</button>
+          <button type="button" data-act="remove" title="${t("remove")}" ${clocks.length === 1 ? "disabled" : ""}>✕</button>
         </div>
         <div class="fields">
-          <label>Label<input data-key="label" type="text"></label>
-          <label>Timezone<input data-key="tz" type="text" list="tz" spellcheck="false"></label>
-          <label>Latitude<input data-key="lat" type="number" step="any" min="-90" max="90"></label>
-          <label>Longitude<input data-key="lon" type="number" step="any" min="-180" max="180"></label>
+          <label>${t("label")}<input data-key="label" type="text"></label>
+          <label>${t("timezone")}<input data-key="tz" type="text" list="tz" spellcheck="false"></label>
+          <label>${t("latitude")}<input data-key="lat" type="number" step="any" min="-90" max="90"></label>
+          <label>${t("longitude")}<input data-key="lon" type="number" step="any" min="-180" max="180"></label>
         </div>
         <div class="row-actions">
-          <button type="button" data-act="home">Use home location</button>
+          <button type="button" data-act="home">${t("use_home")}</button>
         </div>
         ${this._colorSectionHTML(i)}
+        ${this._formatSectionHTML(i)}
       `;
-      el.querySelector(".n").textContent = clock.label || `Clock ${i + 1}`;
+      const title = () => clock.label || t("clock_n", { n: i + 1 });
+      el.querySelector(".n").textContent = title();
       el.querySelectorAll(".fields input[data-key]").forEach(inp => {
         const key = inp.dataset.key;
         inp.value = clock[key] ?? "";
         inp.addEventListener("input", () => {
           const ok = this._setField(i, key, inp.value);
           inp.classList.toggle("bad", key === "tz" && !ok);
-          if (key === "label") el.querySelector(".n").textContent = inp.value || `Clock ${i + 1}`;
+          if (key === "label") el.querySelector(".n").textContent = inp.value || t("clock_n", { n: i + 1 });
         });
       });
       el.querySelector('[data-act="up"]').addEventListener("click", () =>
@@ -755,11 +1100,12 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
     root.querySelector(".add").addEventListener("click", () =>
       this._structural(c => {
         const tz = (this._hass && this._hass.config && this._hass.config.time_zone) || "UTC";
-        c.push({ tz, label: "New clock" });
+        c.push({ tz, label: t("new_clock") });
       }));
 
-    // Colour sections: wire, restore which <details> were open, fill values.
+    // Colour + format sections: wire, restore which <details> were open, fill values.
     root.querySelectorAll("[data-cscope]").forEach(sec => this._wireColorSection(sec));
+    root.querySelectorAll("[data-fscope]").forEach(sec => this._wireFormatSection(sec));
     this._open = this._open || new Set();
     root.querySelectorAll("details[data-open]").forEach(d => {
       d.open = this._open.has(d.dataset.open);
@@ -768,6 +1114,7 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       });
     });
     this._refreshColors();
+    this._refreshFormats();
   }
 }
 
