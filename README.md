@@ -124,3 +124,7 @@ The card uses a 4-row CSS grid: a small top spacer, the label row, the time row,
 ## License
 
 [MIT](./LICENSE)
+
+## Acknowledgements
+
+Inspired by [daylight-calendar-card](https://github.com/superdingo101/daylight-calendar-card) by superdingo101. No code from that project is used here.
