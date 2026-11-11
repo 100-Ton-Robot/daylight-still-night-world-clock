@@ -2,7 +2,7 @@
 
 Yet another day/night world clock card for Home Assistant, this one uses css gradients and sun position so you can easily see sun up/down for each location.
 
-![Eight clocks from Auckland to San Francisco: night skies on the ends, daylight over Cairo, Paris and London, and two date bars (Thu, Nov 12 / Wed, Nov 11)](https://raw.githubusercontent.com/100-Ton-Robot/daylight-still-night-world-clock/dev/images/screenshot.png)
+![Eight clocks from Auckland to San Francisco: night skies on the ends, daylight over Cairo, Paris and London, and two date bars (Thu, Nov 12 / Wed, Nov 11)](https://raw.githubusercontent.com/100-Ton-Robot/dawn-to-dusk-clock-card/dev/images/screenshot.png)
 
 *Auckland and Japan are already on Thursday; Cairo through San Francisco share Wednesday's date bar. Each column's sky follows the sun at that location: daylight over Cairo, Paris and London, sunrise glow in New York, night elsewhere.*
 
@@ -19,7 +19,7 @@ A lightweight [Home Assistant](https://www.home-assistant.io/) Lovelace card (`c
 
 1. In Home Assistant, go to **Settings → Marketplace**.
 2. Select **Add from link** (upper right).
-3. Enter `100-Ton-Robot/daylight-still-night-world-clock` and select **Add**. If asked for a type, choose **Dashboard**.
+3. Enter `100-Ton-Robot/dawn-to-dusk-clock-card` and select **Add**. If asked for a type, choose **Dashboard**.
 4. Install **Dawn to Dusk Clock**, then reload the browser.
 
 The Marketplace installs the card under `www/community` and registers the dashboard resource for you. If you manage resources in YAML, the install dialog shows the resource line to add. Skip to [Configuration](#configuration).
