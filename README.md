@@ -84,6 +84,39 @@ Or in YAML:
 
 **Ordering matters:** clocks are rendered in the order listed, and the date-grouping bar assumes date order is contiguous (no interleaving of dates). List them east → west (or west → east) for date grouping to make sense.
 
+## Sky colours
+
+Colours can be set for the whole card and overridden per clock. Each level can pick a **preset** and then override individual colours; anything you leave out falls through to the level below:
+
+built-in default → card `preset` → card `colors` → clock `preset` → clock `colors`
+
+```yaml
+type: custom:daylight-still-night-clock-card
+preset: vivid               # default | pastel | vivid | high_contrast | monochrome
+colors:
+  day_sky: "#3a7ca8"
+clocks:
+  - tz: Pacific/Auckland
+    label: Auckland
+    lat: -36.85
+    lon: 174.76
+    preset: pastel          # this clock only
+    colors:
+      night_top: "#101020"
+```
+
+**Testing without deleting:** `colors_enabled: false` on the card, or `color_override: false` on a clock, keeps that level's preset and colours in the config but ignores them. Both default to on.
+
+| Phase | When | Keys (top → bottom) |
+|-------|------|---------------------|
+| Night | sun more than 6° below the horizon | `night_top`, `night_upper`, `night_lower`, `night_bottom` |
+| Twilight | sun 0–6° below the horizon | `twilight_top`, `twilight_upper`, `twilight_lower`, `twilight_bottom` |
+| Day | sun up; the warm band rises toward the sun's noon height | `day_top`, `day_upper`, `day_sky`, `day_horizon`, `day_sun` |
+
+The warm glow along the bottom in daytime uses `day_sun` and `day_horizon`. Values are any CSS colour (`"#rrggbb"`, `rgb(...)`, names); quote hex values in YAML.
+
+In the visual editor, **Colours (all clocks)** and each clock's **Colours for this clock** have the on/off switch, a preset dropdown, a sky preview strip (night → noon) and a colour picker per key with a ↺ reset.
+
 ## Layout notes
 
 The card uses a 4-row CSS grid: a small top spacer, the label row, the time row, and a date row. Consecutive clocks that share the same calendar date get a single date bar spanning their columns (at most two groups, since ordering is monotonic). The grouping recomputes every second but only touches the DOM when the grouping actually changes, so it survives midnight rollovers without a page reload. The card takes the height of its content (no fixed row count on sections dashboards), so text sizes and gaps never clip the date row.
