@@ -165,3 +165,5 @@ The card uses a 4-row CSS grid: a small top spacer, the label row, the time row,
 ## Acknowledgements
 
 Inspired by [daylight-calendar-card](https://github.com/superdingo101/daylight-calendar-card) by superdingo101. No code from that project is used here.
+
+I think I started this as a clone of [world-clock-card](https://github.com/Serios/world-clock-card) by Serios.
