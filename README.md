@@ -2,12 +2,16 @@
 
 Yet another day/night world clock card for Home Assistant, this one uses css gradients and sun position so you can easily see sun up/down for each location.
 
+![Eight clocks from Auckland to San Francisco: night skies on the ends, daylight over Cairo, Paris and London, and two date bars (Thu, Nov 12 / Wed, Nov 11)](https://raw.githubusercontent.com/100-Ton-Robot/daylight-still-night-world-clock/dev/images/screenshot.png)
+
+*Auckland and Japan are already on Thursday; Cairo through San Francisco share Wednesday's date bar. Each column's sky follows the sun at that location: daylight over Cairo, Paris and London, sunrise glow in New York, night elsewhere.*
+
 A lightweight [Home Assistant](https://www.home-assistant.io/) Lovelace card (`custom:daylight-still-night-clock-card`) that shows a row of timezone clocks, with an optional sky-gradient background that reflects the sun's actual position at each location.
 
 - Pure vanilla JS — no build step, no dependencies, no HA sensors required
 - Live-updating time, per-clock date labels that group automatically (e.g. one date bar spanning several columns when they share a calendar date)
 - Optional day/night sky gradient per clock, computed from latitude/longitude (dawn → noon → dusk → night)
-- Colors use `currentColor` for text, so the card adapts to your dashboard's light/dark theme
+- Sky and text colours, presets, and time/date format are configurable for the whole card or per clock, from the visual editor or YAML
 
 ## Installation
 
