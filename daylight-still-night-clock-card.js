@@ -82,6 +82,8 @@ const COLOR_GROUPS = [
     keys: ["twilight_top", "twilight_upper", "twilight_lower", "twilight_bottom"] },
   { name: "Day",      hint: "Sun up; the warm band rises toward its noon height",
     keys: ["day_top", "day_upper", "day_sky", "day_horizon", "day_sun"] },
+  { name: "Text",     hint: "Date line follows the date colour; a shared date bar uses its first clock's colour",
+    keys: ["text_label", "text_time", "text_date"] },
 ];
 const COLOR_KEYS = COLOR_GROUPS.flatMap(g => g.keys);
 
@@ -90,26 +92,31 @@ const PRESETS = {
     night_top: "#000000", night_upper: "#3d2e4a", night_lower: "#2a1f35", night_bottom: "#1a3d5c",
     twilight_top: "#000000", twilight_upper: "#2a1f35", twilight_lower: "#1a3d5c", twilight_bottom: "#000000",
     day_top: "#000000", day_upper: "#1a4060", day_sky: "#3a7ca8", day_horizon: "#d4892a", day_sun: "#f5c842",
+    text_label: "#ffffff", text_time: "#ffffff", text_date: "#ffffff",
   } },
   pastel: { label: "Pastel", colors: {
     night_top: "#1c1a2e", night_upper: "#4a4166", night_lower: "#3a3354", night_bottom: "#34506e",
     twilight_top: "#1c1a2e", twilight_upper: "#4a3d63", twilight_lower: "#5a6f94", twilight_bottom: "#2a2840",
     day_top: "#24324a", day_upper: "#4f7598", day_sky: "#7fa8c9", day_horizon: "#e0a87a", day_sun: "#f2d48f",
+    text_label: "#ffffff", text_time: "#ffffff", text_date: "#ffffff",
   } },
   vivid: { label: "Vivid", colors: {
     night_top: "#000000", night_upper: "#3b1d5e", night_lower: "#24103d", night_bottom: "#0d3b6e",
     twilight_top: "#000000", twilight_upper: "#4a1d6b", twilight_lower: "#c2456b", twilight_bottom: "#1a0a2a",
     day_top: "#000814", day_upper: "#0b4f8a", day_sky: "#1e90d6", day_horizon: "#ff7a1a", day_sun: "#ffd31a",
+    text_label: "#ffffff", text_time: "#ffffff", text_date: "#ffffff",
   } },
   high_contrast: { label: "High contrast", colors: {
     night_top: "#000000", night_upper: "#1a1426", night_lower: "#0f0b18", night_bottom: "#0a1e30",
     twilight_top: "#000000", twilight_upper: "#1f1630", twilight_lower: "#123352", twilight_bottom: "#000000",
     day_top: "#000000", day_upper: "#1d5a8c", day_sky: "#4aa3e0", day_horizon: "#f08c1e", day_sun: "#ffe14d",
+    text_label: "#ffffff", text_time: "#ffffff", text_date: "#ffffff",
   } },
   monochrome: { label: "Monochrome", colors: {
     night_top: "#000000", night_upper: "#1e1e1e", night_lower: "#161616", night_bottom: "#262626",
     twilight_top: "#000000", twilight_upper: "#2a2a2a", twilight_lower: "#3a3a3a", twilight_bottom: "#000000",
     day_top: "#000000", day_upper: "#3c3c3c", day_sky: "#6a6a6a", day_horizon: "#8f8f8f", day_sun: "#b5b5b5",
+    text_label: "#ffffff", text_time: "#ffffff", text_date: "#ffffff",
   } },
 };
 
@@ -222,7 +229,6 @@ class DaylightStillNightClockCard extends HTMLElement {
         border-radius: 6px;
         pointer-events: none;
       }
-      .label, .time, .date { color: #ffffff; }
       .label {
         grid-row: 2;
         text-align: center;
@@ -289,10 +295,12 @@ class DaylightStillNightClockCard extends HTMLElement {
       labelEl.className = "label";
       labelEl.style.gridColumn = String(i + 1);
       labelEl.textContent = label;
+      labelEl.style.color = this._colors[i].text_label;
 
       const timeEl = document.createElement("div");
       timeEl.className = "time";
       timeEl.style.gridColumn = String(i + 1);
+      timeEl.style.color = this._colors[i].text_time;
 
       grid.appendChild(labelEl);
       grid.appendChild(timeEl);
@@ -360,6 +368,7 @@ class DaylightStillNightClockCard extends HTMLElement {
       el.style.gridColumn = `${start} / ${end + 1}`;
       el.style.gridRow    = "4";
       el.textContent      = date;
+      el.style.color      = this._colors[start - 1].text_date;
       this._grid.appendChild(el);
       return el;
     });
@@ -590,7 +599,7 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       sec.querySelectorAll("[data-creset]").forEach(btn => { btn.disabled = own[btn.dataset.creset] == null; });
       const eff = this._effectiveColors(scope);
       sec.querySelector(".preview").innerHTML = samples.map(([name, alt]) =>
-        `<div class="pcol" style="background:${sunGradient(alt, 60, eff)}"><span>${name}</span></div>`).join("");
+        `<div class="pcol" style="background:${sunGradient(alt, 60, eff)}"><span style="color:${eff.text_time}">${name}</span></div>`).join("");
     });
   }
 
@@ -643,7 +652,7 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
         }
         .preview { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; }
         .pcol { height: 54px; border-radius: 4px; display: flex; align-items: flex-start; justify-content: center; }
-        .pcol span { color: #fff; font-size: 0.65em; opacity: 0.8; margin-top: 4px; text-shadow: 0 1px 2px #000; }
+        .pcol span { font-size: 0.65em; opacity: 0.8; margin-top: 4px; text-shadow: 0 1px 2px #000; }
         details.cgroup > summary { cursor: pointer; font-size: 0.9em; }
         .ghint { font-size: 0.8em; color: var(--secondary-text-color); }
         .crow { display: grid; grid-template-columns: 5em 2.6em 1fr auto; gap: 6px; align-items: center; margin: 4px 0; }

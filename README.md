@@ -112,6 +112,7 @@ clocks:
 | Night | sun more than 6° below the horizon | `night_top`, `night_upper`, `night_lower`, `night_bottom` |
 | Twilight | sun 0–6° below the horizon | `twilight_top`, `twilight_upper`, `twilight_lower`, `twilight_bottom` |
 | Day | sun up; the warm band rises toward the sun's noon height | `day_top`, `day_upper`, `day_sky`, `day_horizon`, `day_sun` |
+| Text | always | `text_label`, `text_time`, `text_date` (default white). The date line follows `text_date`; a date bar spanning several clocks uses its first clock's colour |
 
 The warm glow along the bottom in daytime uses `day_sun` and `day_horizon`. Values are any CSS colour (`"#rrggbb"`, `rgb(...)`, names); quote hex values in YAML.
 
