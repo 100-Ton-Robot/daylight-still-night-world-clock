@@ -1,4 +1,4 @@
-# Daylight Still Night Clock
+# Dawn to Dusk Clock
 
 Yet another day/night world clock card for Home Assistant, this one uses css gradients and sun position so you can easily see sun up/down for each location.
 
@@ -6,7 +6,7 @@ Yet another day/night world clock card for Home Assistant, this one uses css gra
 
 *Auckland and Japan are already on Thursday; Cairo through San Francisco share Wednesday's date bar. Each column's sky follows the sun at that location: daylight over Cairo, Paris and London, sunrise glow in New York, night elsewhere.*
 
-A lightweight [Home Assistant](https://www.home-assistant.io/) Lovelace card (`custom:daylight-still-night-clock-card`) that shows a row of timezone clocks, with an optional sky-gradient background that reflects the sun's actual position at each location.
+A lightweight [Home Assistant](https://www.home-assistant.io/) Lovelace card (`custom:dawn-to-dusk-clock-card`) that shows a row of timezone clocks, with an optional sky-gradient background that reflects the sun's actual position at each location.
 
 - Pure vanilla JS — no build step, no dependencies, no HA sensors required
 - Live-updating time, per-clock date labels that group automatically (e.g. one date bar spanning several columns when they share a calendar date)
@@ -20,37 +20,37 @@ A lightweight [Home Assistant](https://www.home-assistant.io/) Lovelace card (`c
 1. In Home Assistant, go to **Settings → Marketplace**.
 2. Select **Add from link** (upper right).
 3. Enter `100-Ton-Robot/daylight-still-night-world-clock` and select **Add**. If asked for a type, choose **Dashboard**.
-4. Install **Daylight Still Night Clock**, then reload the browser.
+4. Install **Dawn to Dusk Clock**, then reload the browser.
 
 The Marketplace installs the card under `www/community` and registers the dashboard resource for you. If you manage resources in YAML, the install dialog shows the resource line to add. Skip to [Configuration](#configuration).
 
 ### Option B — Manual install
 
-1. Copy [`daylight-still-night-clock-card.js`](./daylight-still-night-clock-card.js) into your Home Assistant `config/www/` directory:
+1. Copy [`dawn-to-dusk-clock-card.js`](./dawn-to-dusk-clock-card.js) into your Home Assistant `config/www/` directory:
    ```
-   config/www/daylight-still-night-clock-card.js
+   config/www/dawn-to-dusk-clock-card.js
    ```
 2. Add it as a Lovelace resource:
    - **UI:** Settings → Dashboards → ⋮ (top right) → Resources → **Add Resource**
-     - URL: `/local/daylight-still-night-clock-card.js`
+     - URL: `/local/dawn-to-dusk-clock-card.js`
      - Resource type: **JavaScript module**
    - **YAML mode** (`lovelace_resources` or your dashboard's `resources:` key):
      ```yaml
-     - url: /local/daylight-still-night-clock-card.js
+     - url: /local/dawn-to-dusk-clock-card.js
        type: module
      ```
 3. Reload the dashboard (hard refresh the browser tab).
 
-> **Cache busting:** browsers aggressively cache `/local/` files. After editing the file, bump a version query string on the resource URL, e.g. `/local/daylight-still-night-clock-card.js?v=2`, and increment it on each future change.
+> **Cache busting:** browsers aggressively cache `/local/` files. After editing the file, bump a version query string on the resource URL, e.g. `/local/dawn-to-dusk-clock-card.js?v=2`, and increment it on each future change.
 
 ## Configuration
 
-Add **Daylight Still Night Clock** from the dashboard's card picker and use the visual editor: one row per clock with label, timezone (type to search), latitude and longitude, a card-wide **Text style & spacing** section (size, opacity and shadow per line, plus gaps), plus add / remove / reorder buttons and **Use home location**.
+Add **Dawn to Dusk Clock** from the dashboard's card picker and use the visual editor: one row per clock with label, timezone (type to search), latitude and longitude, a card-wide **Text style & spacing** section (size, opacity and shadow per line, plus gaps), plus add / remove / reorder buttons and **Use home location**.
 
 Or in YAML:
 
 ```yaml
-- type: custom:daylight-still-night-clock-card
+- type: custom:dawn-to-dusk-clock-card
   clocks:
     - tz: Australia/Sydney
       label: Sydney
@@ -95,7 +95,7 @@ Colours can be set for the whole card and overridden per clock. Each level can p
 built-in default → card `preset` → card `colors` → clock `preset` → clock `colors`
 
 ```yaml
-type: custom:daylight-still-night-clock-card
+type: custom:dawn-to-dusk-clock-card
 preset: vivid               # default | pastel | vivid | high_contrast | monochrome
 colors:
   day_sky: "#3a7ca8"
@@ -152,7 +152,7 @@ clocks:
 
 ## Translations
 
-The editor follows your Home Assistant language. English (`en`, US spelling) and British English (`en-GB`) are included. To add a language, copy the `en` block in the `TRANSLATIONS` table at the top of `daylight-still-night-clock-card.js`, key it with the Home Assistant language code (e.g. `de`, `pt-BR`) and translate the values; missing keys fall back to the base language, then English. Pull requests welcome.
+The editor follows your Home Assistant language. English (`en`, US spelling) and British English (`en-GB`) are included. To add a language, copy the `en` block in the `TRANSLATIONS` table at the top of `dawn-to-dusk-clock-card.js`, key it with the Home Assistant language code (e.g. `de`, `pt-BR`) and translate the values; missing keys fall back to the base language, then English. Pull requests welcome.
 
 ## Layout notes
 

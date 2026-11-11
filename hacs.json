@@ -1,6 +1,6 @@
 {
-  "name": "Daylight Still Night Clock",
-  "filename": "daylight-still-night-clock-card.js",
+  "name": "Dawn to Dusk Clock",
+  "filename": "dawn-to-dusk-clock-card.js",
   "content_in_root": true,
   "render_readme": true
 }

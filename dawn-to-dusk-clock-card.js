@@ -373,7 +373,7 @@ function _makeFormatters(f, tz, hass) {
   };
 }
 
-class DaylightStillNightClockCard extends HTMLElement {
+class DawnToDuskClockCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -381,7 +381,7 @@ class DaylightStillNightClockCard extends HTMLElement {
 
   setConfig(config) {
     if (!Array.isArray(config.clocks) || config.clocks.length === 0)
-      throw new Error("daylight-still-night-clock-card: 'clocks' must be a non-empty list");
+      throw new Error("dawn-to-dusk-clock-card: 'clocks' must be a non-empty list");
     this._config = config;
     this._makeAllFormatters();
     this._colors = config.clocks.map(clock => _clockColors(config, clock));
@@ -598,7 +598,7 @@ class DaylightStillNightClockCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    return document.createElement("daylight-still-night-clock-card-editor");
+    return document.createElement("dawn-to-dusk-clock-card-editor");
   }
 
   static getStubConfig() {
@@ -612,7 +612,7 @@ class DaylightStillNightClockCard extends HTMLElement {
   }
 }
 
-customElements.define("daylight-still-night-clock-card", DaylightStillNightClockCard);
+customElements.define("dawn-to-dusk-clock-card", DawnToDuskClockCard);
 
 // ---------------------------------------------------------------------------
 // Visual editor: text style, card colours + format, then one block per clock
@@ -625,7 +625,7 @@ const _TIMEZONES = (() => {
 const _LOCALE_SUGGESTIONS = ["en-US", "en-GB", "en-AU", "en-CA", "de-DE", "fr-FR", "es-ES", "it-IT", "nl-NL",
   "pt-BR", "pt-PT", "sv-SE", "da-DK", "nb-NO", "fi-FI", "pl-PL", "cs-CZ", "ja-JP", "zh-CN", "ko-KR", "ar-EG", "hi-IN"];
 
-class DaylightStillNightClockCardEditor extends HTMLElement {
+class DawnToDuskClockCardEditor extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -1118,11 +1118,11 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
   }
 }
 
-customElements.define("daylight-still-night-clock-card-editor", DaylightStillNightClockCardEditor);
+customElements.define("dawn-to-dusk-clock-card-editor", DawnToDuskClockCardEditor);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "daylight-still-night-clock-card",
-  name: "Daylight Still Night Clock",
+  type: "dawn-to-dusk-clock-card",
+  name: "Dawn to Dusk Clock",
   description: "Row of timezone clocks with a live sun-position sky gradient per location.",
 });
