@@ -1,0 +1,12 @@
+{
+  "name": "dawn-to-dusk-clock-card-tests",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "playwright test checks.spec.js",
+    "screenshots": "playwright test screenshots.spec.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

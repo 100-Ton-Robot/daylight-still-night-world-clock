@@ -4,7 +4,7 @@ Yet another day/night world clock card for Home Assistant, this one uses css gra
 
 ![Eight clocks from Auckland to San Francisco: night skies on the ends, daylight over Cairo, Paris and London, and two date bars (Thu, Nov 12 / Wed, Nov 11)](https://raw.githubusercontent.com/100-Ton-Robot/dawn-to-dusk-clock-card/dev/images/screenshot.png)
 
-*Auckland and Japan are already on Thursday; Cairo through San Francisco share Wednesday's date bar. Each column's sky follows the sun at that location: daylight over Cairo, Paris and London, sunrise glow in New York, night elsewhere.*
+*Auckland is already on Thursday; Japan through San Francisco share Wednesday's date bar. Each column's sky follows the sun at that location: daylight over Cairo, Paris and London, sunrise glow in New York, night elsewhere.*
 
 A lightweight [Home Assistant](https://www.home-assistant.io/) Lovelace card (`custom:dawn-to-dusk-clock-card`) that shows a row of timezone clocks, with an optional sky-gradient background that reflects the sun's actual position at each location.
 
