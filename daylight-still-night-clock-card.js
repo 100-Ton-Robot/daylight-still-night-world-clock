@@ -46,8 +46,21 @@ function solarAltitudeDeg(date, lat, lon) {
 }
 
 
-// Text sizes as multiples of the dashboard's normal text size (em).
-const TEXT_SIZE_DEFAULTS = { label_size: 1.0, time_size: 1.05, date_size: 0.7 };
+// Text sizes and gaps, all as multiples of the dashboard's normal text size
+// (em). Gaps of 0 keep the original spacing; negative values pull lines closer.
+const LAYOUT_OPTIONS = {
+  label_size:    { def: 1.0,  min: 0.3 },
+  time_size:     { def: 1.05, min: 0.3 },
+  date_size:     { def: 0.7,  min: 0.3 },
+  label_time_gap: { def: 0, min: -1, max: 3 },
+  time_date_gap:  { def: 0, min: -1, max: 3 },
+};
+function _layoutValue(config, key) {
+  const o = LAYOUT_OPTIONS[key];
+  const v = config[key] === "" || config[key] == null ? NaN : Number(config[key]);
+  if (!Number.isFinite(v) || v < o.min || (o.max != null && v > o.max)) return o.def;
+  return v;
+}
 
 class DaylightStillNightClockCard extends HTMLElement {
   constructor() {
@@ -107,10 +120,11 @@ class DaylightStillNightClockCard extends HTMLElement {
   _build() {
     const n   = this._config.clocks.length;
     const now = new Date();
-    const size = (key) => {
-      const v = Number(this._config[key]);
-      return Number.isFinite(v) && v > 0 ? v : TEXT_SIZE_DEFAULTS[key];
-    };
+    const size = (key) => _layoutValue(this._config, key);
+    // Margins are in the element's own em, so divide by its font size to get
+    // multiples of the card's normal text size.
+    const gapTime = +(size("label_time_gap") / size("time_size")).toFixed(4);
+    const gapDate = +(size("time_date_gap") / size("date_size")).toFixed(4);
 
     const style = document.createElement("style");
     style.textContent = `
@@ -147,6 +161,7 @@ class DaylightStillNightClockCard extends HTMLElement {
         text-align: center;
         font-size: ${size("time_size")}em;
         font-weight: 600;
+        margin-top: ${gapTime}em;
         white-space: nowrap;
         position: relative;
         z-index: 1;
@@ -158,7 +173,7 @@ class DaylightStillNightClockCard extends HTMLElement {
         opacity: 0.55;
         border-top: 1px solid currentColor;
         padding-top: 2px;
-        margin-top: 2px;
+        margin-top: calc(2px + ${gapDate}em);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -341,8 +356,10 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
   }
 
   _setSize(key, raw) {
+    const o = LAYOUT_OPTIONS[key];
     const v = raw.trim() === "" ? NaN : Number(raw);
-    if (Number.isFinite(v) && v > 0) this._config[key] = v; else delete this._config[key];
+    if (Number.isFinite(v) && v >= o.min && (o.max == null || v <= o.max)) this._config[key] = v;
+    else delete this._config[key];
     this._emit();
   }
 
@@ -368,6 +385,7 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
         .head .n { flex: 1; font-weight: 500; }
         .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
         .fields.three { grid-template-columns: 1fr 1fr 1fr; }
+        .fields.gaps { margin-top: 6px; }
         label { display: flex; flex-direction: column; font-size: 0.8em; color: var(--secondary-text-color); }
         input {
           font: inherit; font-size: 1.2em; padding: 6px 8px; margin-top: 2px;
@@ -388,12 +406,16 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       </style>
       <div class="hint">Clocks show left → right in this order. Keep them in east → west (or west → east) order so the date bars group correctly. Leave latitude/longitude empty for a plain dark background.</div>
       <div class="clock sizes">
-        <div class="head"><span class="n">Text size</span></div>
-        <div class="hint">Multiples of the dashboard's normal text size. Clear a field to go back to its default.</div>
+        <div class="head"><span class="n">Text size &amp; spacing</span></div>
+        <div class="hint">Multiples of the dashboard's normal text size. Gaps: 0 = original spacing, negative = closer together. Clear a field to go back to its default.</div>
         <div class="fields three">
           <label>Label<input data-size="label_size" type="number" step="0.05" min="0.3"></label>
           <label>Time<input data-size="time_size" type="number" step="0.05" min="0.3"></label>
           <label>Date<input data-size="date_size" type="number" step="0.05" min="0.3"></label>
+        </div>
+        <div class="fields gaps">
+          <label>Gap: label → time<input data-size="label_time_gap" type="number" step="0.05" min="-1" max="3"></label>
+          <label>Gap: time → date<input data-size="time_date_gap" type="number" step="0.05" min="-1" max="3"></label>
         </div>
       </div>
       <datalist id="tz">${_TIMEZONES.map(t => `<option value="${t}"></option>`).join("")}</datalist>
@@ -406,7 +428,7 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       // Show the effective value, not an empty field: the spinner arrows on an
       // empty number input start from `min` (0.3), not from the default.
       // Displaying it doesn't write it to the config; only an edit does.
-      inp.value = this._config[key] ?? TEXT_SIZE_DEFAULTS[key];
+      inp.value = this._config[key] ?? LAYOUT_OPTIONS[key].def;
       inp.addEventListener("input", () => this._setSize(key, inp.value));
     });
 

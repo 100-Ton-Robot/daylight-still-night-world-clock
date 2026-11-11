@@ -41,7 +41,7 @@ The Marketplace installs the card under `www/community` and registers the dashbo
 
 ## Configuration
 
-Add **Daylight Still Night Clock** from the dashboard's card picker and use the visual editor: one row per clock with label, timezone (type to search), latitude and longitude, a card-wide **Text size** section, plus add / remove / reorder buttons and **Use home location**.
+Add **Daylight Still Night Clock** from the dashboard's card picker and use the visual editor: one row per clock with label, timezone (type to search), latitude and longitude, a card-wide **Text size & spacing** section, plus add / remove / reorder buttons and **Use home location**.
 
 Or in YAML:
 
@@ -77,6 +77,8 @@ Or in YAML:
 | `label_size` | no | Label text size as a multiple of the dashboard's normal text size. Default `1.0` |
 | `time_size` | no | Time text size, same units. Default `1.05` |
 | `date_size` | no | Date text size, same units. Default `0.7` |
+| `label_time_gap` | no | Extra space between label and time, same units. `0` (default) = original spacing; negative pulls them closer (min `-1`, max `3`) |
+| `time_date_gap` | no | Extra space between time and date, same units and limits. Default `0` |
 
 **Ordering matters:** clocks are rendered in the order listed, and the date-grouping bar assumes date order is contiguous (no interleaving of dates). List them east → west (or west → east) for date grouping to make sense.
 
