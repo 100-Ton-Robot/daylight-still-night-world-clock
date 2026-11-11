@@ -389,7 +389,7 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
       <div class="hint">Clocks show left → right in this order. Keep them in east → west (or west → east) order so the date bars group correctly. Leave latitude/longitude empty for a plain dark background.</div>
       <div class="clock sizes">
         <div class="head"><span class="n">Text size</span></div>
-        <div class="hint">Multiples of the dashboard's normal text size. Leave empty for the default.</div>
+        <div class="hint">Multiples of the dashboard's normal text size. Clear a field to go back to its default.</div>
         <div class="fields three">
           <label>Label<input data-size="label_size" type="number" step="0.05" min="0.3"></label>
           <label>Time<input data-size="time_size" type="number" step="0.05" min="0.3"></label>
@@ -403,8 +403,10 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
 
     root.querySelectorAll("input[data-size]").forEach(inp => {
       const key = inp.dataset.size;
-      inp.value = this._config[key] ?? "";
-      inp.placeholder = String(TEXT_SIZE_DEFAULTS[key]);
+      // Show the effective value, not an empty field: the spinner arrows on an
+      // empty number input start from `min` (0.3), not from the default.
+      // Displaying it doesn't write it to the config; only an edit does.
+      inp.value = this._config[key] ?? TEXT_SIZE_DEFAULTS[key];
       inp.addEventListener("input", () => this._setSize(key, inp.value));
     });
 
