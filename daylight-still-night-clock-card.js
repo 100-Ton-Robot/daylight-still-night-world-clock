@@ -304,16 +304,22 @@ class DaylightStillNightClockCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
-    // Our own edits come straight back through setConfig; re-rendering then
-    // would steal focus from the field being typed in.
-    if (this._lastEmitted && JSON.stringify(config) === this._lastEmitted) return;
+    // Our own edits come back through setConfig, asynchronously, so an echo of
+    // an older keystroke can arrive after newer edits. Ignore echoes of any
+    // recent emission: re-rendering from one would steal focus and roll back
+    // the newer edits (this lost a just-typed latitude).
+    if (this._emitted && this._emitted.has(JSON.stringify(config))) return;
     this._config = { ...config, clocks: (config.clocks || []).map(c => ({ ...c })) };
     this._render();
   }
 
   _emit() {
     const config = { ...this._config, clocks: this._config.clocks.map(c => ({ ...c })) };
-    this._lastEmitted = JSON.stringify(config);
+    const key = JSON.stringify(config);
+    this._emitted = this._emitted || new Set();
+    this._emitted.delete(key);
+    this._emitted.add(key);
+    if (this._emitted.size > 100) this._emitted.delete(this._emitted.values().next().value);
     this.dispatchEvent(new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true }));
   }
 
